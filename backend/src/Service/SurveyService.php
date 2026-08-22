@@ -39,6 +39,14 @@ class SurveyService
         return $survey;
     }
 
+    public function findEditable(int $id): Survey
+    {
+        $survey = $this->findActive($id);
+        $this->assertEditable($survey);
+
+        return $survey;
+    }
+
     public function create(string $title, ?string $description, string $statusName): Survey
     {
         $status = $this->surveyStatusRepository->findOneBy(['name' => $statusName]);
