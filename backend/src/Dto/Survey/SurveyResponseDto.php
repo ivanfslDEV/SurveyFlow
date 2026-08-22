@@ -10,6 +10,7 @@ class SurveyResponseDto
         public string $title,
         public ?string $description,
         public string $status,
+        public bool $active,
     ) {
     }
 
@@ -20,6 +21,7 @@ class SurveyResponseDto
             title: $survey->getTitle(),
             description: $survey->getDescription(),
             status: $survey->getStatus()->getName(),
+            active: $survey->isActive(),
         );
     }
 }

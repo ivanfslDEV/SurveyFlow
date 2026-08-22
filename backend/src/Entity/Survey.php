@@ -27,6 +27,9 @@ class Survey
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $active = true;
+
     #[ORM\ManyToOne(inversedBy: 'surveys')]
     #[ORM\JoinColumn(nullable: false)]
     private ?SurveyStatus $status = null;
@@ -80,6 +83,18 @@ class Survey
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): static
+    {
+        $this->active = $active;
 
         return $this;
     }

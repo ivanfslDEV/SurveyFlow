@@ -10,6 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: SurveyStatusRepository::class)]
 class SurveyStatus
 {
+    public const ARCHIVED = 'archived';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

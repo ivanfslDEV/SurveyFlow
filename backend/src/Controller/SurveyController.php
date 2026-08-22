@@ -4,19 +4,20 @@ namespace App\Controller;
 
 use App\Dto\Survey\CreateSurveyDto;
 use App\Dto\Survey\SurveyResponseDto;
+use App\Dto\Survey\UpdateSurveyDto;
+use App\Dto\Survey\UpdateSurveyStatusDto;
 use App\Entity\Survey;
-use App\Form\SurveyType;
 use App\Repository\SurveyRepository;
 use App\Service\SurveyService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/survey')]
+#[Route('/api/surveys')]
 final class SurveyController extends AbstractController
 {
     public function __construct(
@@ -25,14 +26,34 @@ final class SurveyController extends AbstractController
     }
 
     #[Route(name: 'app_survey_index', methods: ['GET'])]
-    public function index(SurveyRepository $surveyRepository): Response
+    public function index(Request $request, SurveyRepository $surveyRepository): JsonResponse
     {
-        return $this->render('survey/index.html.twig', [
-            'surveys' => $surveyRepository->findAll(),
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = min(100, max(1, $request->query->getInt('limit', 20)));
+        $total = $surveyRepository->count(['active' => true]);
+
+        $surveys = array_map(
+            static fn (Survey $survey): SurveyResponseDto => SurveyResponseDto::fromEntity($survey),
+            $surveyRepository->findBy(
+                criteria: ['active' => true],
+                orderBy: ['id' => 'DESC'],
+                limit: $limit,
+                offset: ($page - 1) * $limit,
+            ),
+        );
+
+        return $this->json([
+            'data' => $surveys,
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $total,
+                'totalPages' => (int) ceil($total / $limit),
+            ],
         ]);
     }
 
-    #[Route('/new', methods: ['POST'])]
+    #[Route(methods: ['POST'])]
     public function create(
         #[MapRequestPayload] CreateSurveyDto $dto
     ): JsonResponse
@@ -43,39 +64,56 @@ final class SurveyController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_survey_show', methods: ['GET'])]
-    public function show(Survey $survey): Response
+    public function show(int $id): JsonResponse
     {
-        return $this->render('survey/show.html.twig', [
-            'survey' => $survey,
-        ]);
+        $survey = $this->surveyService->findActive($id);
+
+        return $this->json(SurveyResponseDto::fromEntity($survey));
     }
 
-    #[Route('/{id}/edit', name: 'app_survey_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Survey $survey, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_survey_update', methods: ['PATCH'])]
+    public function update(
+        Request $request,
+        int $id,
+        #[MapRequestPayload] UpdateSurveyDto $dto,
+    ): JsonResponse
     {
-        $form = $this->createForm(SurveyType::class, $survey);
-        $form->handleRequest($request);
+        $payload = $request->toArray();
+        $updatableFields = array_intersect(['title', 'description'], array_keys($payload));
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_survey_index', [], Response::HTTP_SEE_OTHER);
+        if ($updatableFields === []) {
+            throw new UnprocessableEntityHttpException('At least one field must be provided.');
         }
 
-        return $this->render('survey/edit.html.twig', [
-            'survey' => $survey,
-            'form' => $form,
-        ]);
+        $survey = $this->surveyService->update(
+            survey: $this->surveyService->findActive($id),
+            title: $dto->title,
+            description: $dto->description,
+            updateTitle: array_key_exists('title', $payload),
+            updateDescription: array_key_exists('description', $payload),
+        );
+
+        return $this->json(SurveyResponseDto::fromEntity($survey));
     }
 
-    #[Route('/{id}', name: 'app_survey_delete', methods: ['POST'])]
-    public function delete(Request $request, Survey $survey, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$survey->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($survey);
-            $entityManager->flush();
-        }
+    #[Route('/{id}/status', name: 'app_survey_update_status', methods: ['PATCH'])]
+    public function updateStatus(
+        int $id,
+        #[MapRequestPayload] UpdateSurveyStatusDto $dto,
+    ): JsonResponse {
+        $survey = $this->surveyService->updateStatus(
+            $this->surveyService->findActive($id),
+            $dto->statusName,
+        );
 
-        return $this->redirectToRoute('app_survey_index', [], Response::HTTP_SEE_OTHER);
+        return $this->json(SurveyResponseDto::fromEntity($survey));
+    }
+
+    #[Route('/{id}', name: 'app_survey_delete', methods: ['DELETE'])]
+    public function delete(int $id): Response
+    {
+        $this->surveyService->delete($this->surveyService->findActive($id));
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
     }
 }
