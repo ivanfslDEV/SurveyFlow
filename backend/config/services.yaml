@@ -18,9 +18,32 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/Kernel.php'
+            - '../src/Shared/Domain/Clock/'
+            - '../src/Shared/Domain/Exception/'
+            - '../src/Survey/Domain/Entity/'
+            - '../src/Survey/Domain/Exception/'
+            - '../src/Survey/Domain/Repository/'
+            - '../src/Survey/Domain/ValueObject/'
+
+    App\Survey\Domain\Repository\SurveyRepositoryInterface:
+        alias: App\Survey\Infrastructure\Persistence\Doctrine\Repository\DoctrineSurveyRepository
+
+    App\Shared\Domain\Clock\ClockInterface:
+        alias: App\Shared\Infrastructure\Clock\SystemClock
+
+    App\Survey\Domain\Repository\SurveyStatusRepositoryInterface:
+        alias: App\Survey\Infrastructure\Persistence\Doctrine\Repository\DoctrineSurveyStatusRepository
+
+    App\Survey\Application\Query\SurveyQueryInterface:
+        alias: App\Survey\Infrastructure\Persistence\Doctrine\Repository\DoctrineSurveyRepository
+
+    App\Survey\Application\Query\QuestionQueryInterface:
+        alias: App\Survey\Infrastructure\Persistence\Doctrine\Repository\DoctrineQuestionQuery
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
-    App\EventListener\ExceptionListener:
+    App\Shared\Infrastructure\Http\EventListener\ExceptionListener:
         arguments:
             $environment: '%kernel.environment%'
