@@ -20,19 +20,19 @@ class DoctrineSurveyRepository extends ServiceEntityRepository implements Survey
         parent::__construct($registry, Survey::class);
     }
 
-    public function findActivePaginated(int $limit, int $offset): array
+    public function findActiveByOwnerPaginated(int $ownerId, int $limit, int $offset): array
     {
         return $this->findBy(
-            ['active' => true],
+            ['active' => true, 'ownerId' => $ownerId],
             ['id' => 'DESC'],
             $limit,
             $offset,
         );
     }
 
-    public function countActive(): int
+    public function countActiveByOwner(int $ownerId): int
     {
-        return $this->count(['active' => true]);
+        return $this->count(['active' => true, 'ownerId' => $ownerId]);
     }
 
     public function findActiveById(int $id): ?Survey

@@ -9,7 +9,7 @@ interface SurveyQueryInterface
     /**
      * @return Survey[]
      */
-    public function findActivePaginated(int $limit, int $offset): array;
+    public function findActiveByOwnerPaginated(int $ownerId, int $limit, int $offset): array;
 
-    public function countActive(): int;
+    public function countActiveByOwner(int $ownerId): int;
 }

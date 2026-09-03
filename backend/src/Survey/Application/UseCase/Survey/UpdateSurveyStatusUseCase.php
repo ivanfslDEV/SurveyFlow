@@ -3,6 +3,7 @@
 namespace App\Survey\Application\UseCase\Survey;
 
 use App\Shared\Domain\Clock\ClockInterface;
+use App\Survey\Application\Security\SurveyAccessPolicy;
 use App\Survey\Domain\Entity\Survey;
 use App\Survey\Domain\Exception\InvalidSurveyDataException;
 use App\Survey\Domain\Exception\SurveyNotFoundException;
@@ -15,6 +16,7 @@ class UpdateSurveyStatusUseCase
         private SurveyRepositoryInterface $surveyRepository,
         private SurveyStatusRepositoryInterface $surveyStatusRepository,
         private ClockInterface $clock,
+        private SurveyAccessPolicy $accessPolicy,
     ) {
     }
 
@@ -22,6 +24,7 @@ class UpdateSurveyStatusUseCase
     {
         $survey = $this->surveyRepository->findActiveById($id)
             ?? throw new SurveyNotFoundException();
+        $this->accessPolicy->assertCanManage($survey);
         $status = $this->surveyStatusRepository->findOneByName($statusName)
             ?? throw new InvalidSurveyDataException('Status not found.');
 

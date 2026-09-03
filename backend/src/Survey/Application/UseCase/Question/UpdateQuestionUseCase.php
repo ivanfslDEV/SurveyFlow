@@ -3,6 +3,7 @@
 namespace App\Survey\Application\UseCase\Question;
 
 use App\Shared\Domain\Clock\ClockInterface;
+use App\Survey\Application\Security\SurveyAccessPolicy;
 use App\Survey\Domain\Entity\Question;
 use App\Survey\Domain\Exception\InvalidQuestionDataException;
 use App\Survey\Domain\Exception\QuestionNotFoundException;
@@ -14,6 +15,7 @@ class UpdateQuestionUseCase
     public function __construct(
         private SurveyRepositoryInterface $surveyRepository,
         private ClockInterface $clock,
+        private SurveyAccessPolicy $accessPolicy,
     ) {
     }
 
@@ -30,6 +32,7 @@ class UpdateQuestionUseCase
     ): Question {
         $survey = $this->surveyRepository->findActiveByQuestionId($id)
             ?? throw new QuestionNotFoundException();
+        $this->accessPolicy->assertCanManage($survey);
         $questionType = $type === null ? null : QuestionType::tryFrom($type);
 
         if ($updateType && $type !== null && $questionType === null) {

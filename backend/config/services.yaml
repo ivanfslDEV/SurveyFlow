@@ -22,6 +22,9 @@ services:
             - '../src/Kernel.php'
             - '../src/Shared/Domain/Clock/'
             - '../src/Shared/Domain/Exception/'
+            - '../src/Identity/Domain/Entity/'
+            - '../src/Identity/Domain/Exception/'
+            - '../src/Identity/Domain/Repository/'
             - '../src/Survey/Domain/Entity/'
             - '../src/Survey/Domain/Exception/'
             - '../src/Survey/Domain/Repository/'
@@ -29,6 +32,15 @@ services:
 
     App\Survey\Domain\Repository\SurveyRepositoryInterface:
         alias: App\Survey\Infrastructure\Persistence\Doctrine\Repository\DoctrineSurveyRepository
+
+    App\Identity\Domain\Repository\UserRepositoryInterface:
+        alias: App\Identity\Infrastructure\Persistence\Doctrine\Repository\DoctrineUserRepository
+
+    App\Identity\Application\Security\PasswordHasherInterface:
+        alias: App\Identity\Infrastructure\Security\SymfonyPasswordHasher
+
+    App\Identity\Application\Security\CurrentUserInterface:
+        alias: App\Identity\Infrastructure\Security\SymfonyCurrentUser
 
     App\Shared\Domain\Clock\ClockInterface:
         alias: App\Shared\Infrastructure\Clock\SystemClock

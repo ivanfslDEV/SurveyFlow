@@ -4,6 +4,7 @@ namespace App\Survey\Application\UseCase\Question;
 
 use App\Shared\Domain\Clock\ClockInterface;
 use App\Survey\Application\Dto\Question\CreateQuestionDto;
+use App\Survey\Application\Security\SurveyAccessPolicy;
 use App\Survey\Domain\Entity\Question;
 use App\Survey\Domain\Exception\InvalidQuestionDataException;
 use App\Survey\Domain\Exception\SurveyNotFoundException;
@@ -15,6 +16,7 @@ class CreateQuestionsUseCase
     public function __construct(
         private SurveyRepositoryInterface $surveyRepository,
         private ClockInterface $clock,
+        private SurveyAccessPolicy $accessPolicy,
     ) {
     }
 
@@ -27,6 +29,7 @@ class CreateQuestionsUseCase
     {
         $survey = $this->surveyRepository->findActiveById($surveyId)
             ?? throw new SurveyNotFoundException();
+        $this->accessPolicy->assertCanManage($survey);
         $questionData = array_map(
             static function (CreateQuestionDto $dto): array {
                 $type = QuestionType::tryFrom($dto->type)

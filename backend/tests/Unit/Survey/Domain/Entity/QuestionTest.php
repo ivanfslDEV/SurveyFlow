@@ -22,6 +22,7 @@ final class QuestionTest extends TestCase
             null,
             SurveyStatus::create('draft'),
             $this->createdAt,
+            1,
         );
     }
 

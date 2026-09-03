@@ -7,6 +7,7 @@ class SurveyResponseDto
 {
     public function __construct(
         public int $id,
+        public int $ownerId,
         public string $title,
         public ?string $description,
         public string $status,
@@ -18,6 +19,7 @@ class SurveyResponseDto
     {
         return new self(
             id: $survey->getId(),
+            ownerId: $survey->getOwnerId(),
             title: $survey->getTitle(),
             description: $survey->getDescription(),
             status: $survey->getStatus()->getName(),

@@ -19,6 +19,7 @@ class Survey
     private \DateTimeImmutable $createdAt;
     private \DateTimeImmutable $updatedAt;
     private bool $active;
+    private int $ownerId;
     private SurveyStatus $status;
 
     /**
@@ -31,14 +32,17 @@ class Survey
         ?string $description,
         SurveyStatus $status,
         \DateTimeImmutable $createdAt,
+        int $ownerId,
     ) {
         self::assertTitle($title);
         self::assertStatusAvailable($status);
+        self::assertOwnerId($ownerId);
 
         $this->title = $title;
         $this->description = $description;
         $this->status = $status;
         $this->active = true;
+        $this->ownerId = $ownerId;
         $this->createdAt = $createdAt;
         $this->updatedAt = $createdAt;
         $this->questions = new ArrayCollection();
@@ -49,8 +53,9 @@ class Survey
         ?string $description,
         SurveyStatus $status,
         \DateTimeImmutable $createdAt,
+        int $ownerId,
     ): self {
-        return new self($title, $description, $status, $createdAt);
+        return new self($title, $description, $status, $createdAt, $ownerId);
     }
 
     public function updateDetails(
@@ -207,6 +212,16 @@ class Survey
         return $this->active;
     }
 
+    public function getOwnerId(): int
+    {
+        return $this->ownerId;
+    }
+
+    public function isOwnedBy(int $userId): bool
+    {
+        return $this->ownerId === $userId;
+    }
+
     public function getStatus(): SurveyStatus
     {
         return $this->status;
@@ -270,6 +285,13 @@ class Survey
     {
         if (!$status->isActive()) {
             throw new InvalidSurveyDataException('Status inactive.');
+        }
+    }
+
+    private static function assertOwnerId(int $ownerId): void
+    {
+        if ($ownerId < 1) {
+            throw new InvalidSurveyDataException('Owner ID must be greater than zero.');
         }
     }
 }

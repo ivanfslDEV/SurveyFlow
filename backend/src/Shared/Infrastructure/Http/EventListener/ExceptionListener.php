@@ -4,6 +4,7 @@ namespace App\Shared\Infrastructure\Http\EventListener;
 
 use App\Shared\Domain\Exception\InvalidInputException;
 use App\Shared\Domain\Exception\ResourceConflictException;
+use App\Shared\Domain\Exception\ResourceForbiddenException;
 use App\Shared\Domain\Exception\ResourceNotFoundException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -50,6 +51,13 @@ class ExceptionListener
             $event->setResponse(new JsonResponse([
                 'message' => $exception->getMessage(),
             ], 409));
+            return;
+        }
+
+        if ($exception instanceof ResourceForbiddenException) {
+            $event->setResponse(new JsonResponse([
+                'message' => $exception->getMessage(),
+            ], 403));
             return;
         }
 

@@ -20,7 +20,7 @@ final class SurveyTest extends TestCase
         $createdAt = new \DateTimeImmutable(self::NOW);
         $status = SurveyStatus::create('draft');
 
-        $survey = Survey::create('Customer satisfaction', 'Quarterly survey', $status, $createdAt);
+        $survey = Survey::create('Customer satisfaction', 'Quarterly survey', $status, $createdAt, 1);
 
         self::assertNull($survey->getId());
         self::assertSame('Customer satisfaction', $survey->getTitle());
@@ -30,6 +30,9 @@ final class SurveyTest extends TestCase
         self::assertSame($createdAt, $survey->getUpdatedAt());
         self::assertTrue($survey->isActive());
         self::assertFalse($survey->isArchived());
+        self::assertSame(1, $survey->getOwnerId());
+        self::assertTrue($survey->isOwnedBy(1));
+        self::assertFalse($survey->isOwnedBy(2));
     }
 
     public function testItAddsQuestionsThroughTheAggregateRoot(): void
@@ -109,6 +112,7 @@ final class SurveyTest extends TestCase
             null,
             SurveyStatus::create(SurveyStatus::ARCHIVED),
             new \DateTimeImmutable(self::NOW),
+            1,
         );
 
         $this->expectException(SurveyNotEditableException::class);
@@ -129,6 +133,7 @@ final class SurveyTest extends TestCase
             null,
             SurveyStatus::create(SurveyStatus::ARCHIVED),
             new \DateTimeImmutable(self::NOW),
+            1,
         );
         $draft = SurveyStatus::create('draft');
         $updatedAt = new \DateTimeImmutable('2026-09-03 11:00:00');
@@ -149,6 +154,7 @@ final class SurveyTest extends TestCase
             null,
             SurveyStatus::create('disabled', false),
             new \DateTimeImmutable(self::NOW),
+            1,
         );
     }
 
@@ -176,6 +182,7 @@ final class SurveyTest extends TestCase
             null,
             SurveyStatus::create('draft'),
             $createdAt ?? new \DateTimeImmutable(self::NOW),
+            1,
         );
     }
 }
