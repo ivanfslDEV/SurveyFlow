@@ -25,6 +25,19 @@
         <field name="position" type="integer" column="position"/>
         <field name="createdAt" type="datetime_immutable" column="created_at"/>
 
+        <one-to-many field="options"
+                     target-entity="App\Survey\Domain\Entity\QuestionOption"
+                     mapped-by="question"
+                     orphan-removal="true">
+            <cascade>
+                <cascade-persist/>
+            </cascade>
+            <order-by>
+                <order-by-field name="position" direction="ASC"/>
+                <order-by-field name="id" direction="ASC"/>
+            </order-by>
+        </one-to-many>
+
         <many-to-one field="survey"
                      target-entity="App\Survey\Domain\Entity\Survey"
                      inversed-by="questions">

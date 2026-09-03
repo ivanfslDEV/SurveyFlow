@@ -43,6 +43,20 @@ class DoctrineSurveyRepository extends ServiceEntityRepository implements Survey
         ]);
     }
 
+    public function findPublishedById(int $id): ?Survey
+    {
+        return $this->createQueryBuilder('survey')
+            ->innerJoin('survey.status', 'status')
+            ->andWhere('survey.id = :id')
+            ->andWhere('survey.active = :active')
+            ->andWhere('LOWER(status.name) = :status')
+            ->setParameter('id', $id)
+            ->setParameter('active', true)
+            ->setParameter('status', 'published')
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function findActiveByQuestionId(int $questionId): ?Survey
     {
         return $this->createQueryBuilder('survey')

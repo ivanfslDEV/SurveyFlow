@@ -20,4 +20,10 @@ class CreateQuestionDto
     #[Assert\NotNull(message: 'Position is mandatory')]
     #[Assert\Positive(message: 'Position must be greater than zero.')]
     public int $position;
+
+    /**
+     * @var array<int, array{label: string, position: int}>
+     */
+    #[Assert\Type('array')]
+    public array $options = [];
 }

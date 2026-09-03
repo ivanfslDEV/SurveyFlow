@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="App\Survey\Domain\Entity\Submission" table="submission">
+        <indexes>
+            <index name="idx_submission_survey_id" columns="survey_id"/>
+            <index name="idx_submission_created_at" columns="created_at"/>
+        </indexes>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="IDENTITY"/>
+        </id>
+
+        <field name="surveyId" type="integer" column="survey_id"/>
+        <field name="createdAt" type="datetime_immutable" column="created_at"/>
+
+        <one-to-many field="answers"
+                     target-entity="App\Survey\Domain\Entity\Answer"
+                     mapped-by="submission"
+                     orphan-removal="true">
+            <cascade>
+                <cascade-persist/>
+            </cascade>
+            <order-by>
+                <order-by-field name="id" direction="ASC"/>
+            </order-by>
+        </one-to-many>
+    </entity>
+</doctrine-mapping>

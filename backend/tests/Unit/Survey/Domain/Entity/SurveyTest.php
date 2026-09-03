@@ -7,6 +7,7 @@ use App\Survey\Domain\Entity\SurveyStatus;
 use App\Survey\Domain\Exception\InvalidSurveyDataException;
 use App\Survey\Domain\Exception\QuestionPositionConflictException;
 use App\Survey\Domain\Exception\SurveyNotEditableException;
+use App\Survey\Domain\Exception\SurveyNotAcceptingSubmissionsException;
 use App\Survey\Domain\Exception\SurveyNotFoundException;
 use App\Survey\Domain\ValueObject\QuestionType;
 use PHPUnit\Framework\TestCase;
@@ -172,6 +173,18 @@ final class SurveyTest extends TestCase
             true,
             false,
             new \DateTimeImmutable('2026-09-03 12:00:00'),
+        );
+    }
+
+    public function testItCannotBePublishedWithoutQuestions(): void
+    {
+        $survey = $this->createDraftSurvey();
+
+        $this->expectException(SurveyNotAcceptingSubmissionsException::class);
+
+        $survey->changeStatus(
+            SurveyStatus::create(SurveyStatus::PUBLISHED),
+            new \DateTimeImmutable('2026-09-03 11:00:00'),
         );
     }
 

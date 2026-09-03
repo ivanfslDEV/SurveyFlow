@@ -18,6 +18,14 @@ class DoctrineQuestionQuery extends ServiceEntityRepository implements QuestionQ
         parent::__construct($registry, Question::class);
     }
 
+    public function findBySurvey(Survey $survey): array
+    {
+        return $this->findBy(
+            ['survey' => $survey],
+            ['position' => 'ASC', 'id' => 'ASC'],
+        );
+    }
+
     public function findBySurveyPaginated(Survey $survey, int $limit, int $offset): array
     {
         return $this->findBy(

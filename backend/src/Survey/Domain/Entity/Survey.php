@@ -3,10 +3,12 @@
 namespace App\Survey\Domain\Entity;
 
 use App\Survey\Domain\Exception\InvalidSurveyDataException;
+use App\Survey\Domain\Exception\InvalidSubmissionDataException;
 use App\Survey\Domain\Exception\QuestionNotFoundException;
 use App\Survey\Domain\Exception\QuestionPositionConflictException;
 use App\Survey\Domain\Exception\SurveyNotEditableException;
 use App\Survey\Domain\Exception\SurveyNotFoundException;
+use App\Survey\Domain\Exception\SurveyNotAcceptingSubmissionsException;
 use App\Survey\Domain\ValueObject\QuestionType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -87,6 +89,11 @@ class Survey
     {
         $this->assertActive();
         self::assertStatusAvailable($status);
+
+        if ($status->isPublished()) {
+            $this->assertReadyForPublication();
+        }
+
         $this->status = $status;
         $this->updatedAt = $updatedAt;
     }
@@ -99,7 +106,7 @@ class Survey
     }
 
     /**
-     * @param array<int, array{title: string, type: QuestionType, required: bool, position: int}> $questionData
+     * @param array<int, array{title: string, type: QuestionType, required: bool, position: int, options?: array<int, array{label: string, position: int}>}> $questionData
      *
      * @return Question[]
      */
@@ -129,6 +136,7 @@ class Survey
                 $data['required'],
                 $data['position'],
                 $createdAt,
+                $data['options'] ?? [],
             );
         }
 
@@ -152,6 +160,8 @@ class Survey
         bool $updateRequired,
         bool $updatePosition,
         \DateTimeImmutable $updatedAt,
+        ?array $options = null,
+        bool $updateOptions = false,
     ): Question {
         $this->assertEditable();
         $question = $this->findQuestion($questionId);
@@ -169,10 +179,82 @@ class Survey
             $updateType,
             $updateRequired,
             $updatePosition,
+            $options,
+            $updateOptions,
         );
         $this->updatedAt = $updatedAt;
 
         return $question;
+    }
+
+    /**
+     * @param array<int, array{questionId: int, value: mixed}> $answerData
+     */
+    public function createSubmission(array $answerData, \DateTimeImmutable $createdAt): Submission
+    {
+        $this->assertAcceptingSubmissions();
+        $surveyId = $this->id;
+
+        if ($surveyId === null) {
+            throw new InvalidSubmissionDataException(
+                'Survey must be persisted before receiving submissions.',
+            );
+        }
+
+        $questionsById = [];
+
+        foreach ($this->questions as $question) {
+            $questionId = $question->getId();
+
+            if ($questionId !== null) {
+                $questionsById[$questionId] = $question;
+            }
+        }
+
+        $answeredQuestionIds = [];
+        $normalizedAnswers = [];
+
+        foreach ($answerData as $data) {
+            if (!isset($data['questionId'])
+                || !is_int($data['questionId'])
+                || !array_key_exists('value', $data)) {
+                throw new InvalidSubmissionDataException(
+                    'Each answer must contain an integer questionId and a value.',
+                );
+            }
+
+            $questionId = $data['questionId'];
+
+            if (in_array($questionId, $answeredQuestionIds, true)) {
+                throw new InvalidSubmissionDataException(
+                    'A question can only be answered once per submission.',
+                );
+            }
+
+            $question = $questionsById[$questionId] ?? null;
+
+            if ($question === null) {
+                throw new InvalidSubmissionDataException(
+                    'Answered question does not belong to this survey.',
+                );
+            }
+
+            $answeredQuestionIds[] = $questionId;
+            $normalizedAnswers[] = [
+                'question' => $question,
+                'value' => $question->normalizeAnswer($data['value']),
+            ];
+        }
+
+        foreach ($questionsById as $questionId => $question) {
+            if ($question->isRequired() && !in_array($questionId, $answeredQuestionIds, true)) {
+                throw new InvalidSubmissionDataException(
+                    sprintf('Question %d is required.', $questionId),
+                );
+            }
+        }
+
+        return Submission::create($surveyId, $normalizedAnswers, $createdAt);
     }
 
     public function removeQuestion(int $questionId, \DateTimeImmutable $updatedAt): void
@@ -230,6 +312,22 @@ class Survey
     public function isArchived(): bool
     {
         return $this->status->isArchived();
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status->isPublished();
+    }
+
+    public function assertAcceptingSubmissions(): void
+    {
+        $this->assertActive();
+
+        if (!$this->isPublished()) {
+            throw new SurveyNotAcceptingSubmissionsException();
+        }
+
+        $this->assertReadyForPublication();
     }
 
     public function assertActive(): void
@@ -292,6 +390,19 @@ class Survey
     {
         if ($ownerId < 1) {
             throw new InvalidSurveyDataException('Owner ID must be greater than zero.');
+        }
+    }
+
+    private function assertReadyForPublication(): void
+    {
+        if ($this->questions->isEmpty()) {
+            throw new SurveyNotAcceptingSubmissionsException(
+                'Survey must contain at least one question before publication.',
+            );
+        }
+
+        foreach ($this->questions as $question) {
+            $question->assertReadyForPublication();
         }
     }
 }

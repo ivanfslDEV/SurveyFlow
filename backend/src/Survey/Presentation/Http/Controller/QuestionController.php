@@ -100,7 +100,7 @@ final class QuestionController extends AbstractController
     ): JsonResponse {
         $payload = $request->toArray();
         $updatableFields = array_intersect(
-            ['title', 'type', 'required', 'position'],
+            ['title', 'type', 'required', 'position', 'options'],
             array_keys($payload),
         );
 
@@ -118,6 +118,8 @@ final class QuestionController extends AbstractController
             updateType: array_key_exists('type', $payload),
             updateRequired: array_key_exists('required', $payload),
             updatePosition: array_key_exists('position', $payload),
+            options: $dto->options,
+            updateOptions: array_key_exists('options', $payload),
         );
 
         return $this->json(QuestionResponseDto::fromEntity($question));

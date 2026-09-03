@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="App\Survey\Domain\Entity\Answer" table="answer">
+        <indexes>
+            <index name="idx_answer_submission_id" columns="submission_id"/>
+            <index name="idx_answer_question_id" columns="question_id"/>
+        </indexes>
+        <unique-constraints>
+            <unique-constraint name="uniq_answer_submission_question" columns="submission_id,question_id"/>
+        </unique-constraints>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="IDENTITY"/>
+        </id>
+
+        <field name="questionId" type="integer" column="question_id"/>
+        <field name="questionTitle" type="string" column="question_title" length="255"/>
+        <field name="questionType"
+               type="string"
+               column="question_type"
+               length="30"
+               enum-type="App\Survey\Domain\ValueObject\QuestionType"/>
+        <field name="value" type="json" column="value"/>
+
+        <many-to-one field="submission"
+                     target-entity="App\Survey\Domain\Entity\Submission"
+                     inversed-by="answers">
+            <join-column name="submission_id" referenced-column-name="id" nullable="false"/>
+        </many-to-one>
+    </entity>
+</doctrine-mapping>

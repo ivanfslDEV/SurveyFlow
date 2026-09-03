@@ -5,6 +5,7 @@ namespace App\Survey\Domain\Entity;
 class SurveyStatus
 {
     public const ARCHIVED = 'archived';
+    public const PUBLISHED = 'published';
 
     private ?int $id = null;
     private string $name;
@@ -39,5 +40,10 @@ class SurveyStatus
     public function isArchived(): bool
     {
         return strtolower($this->name) === self::ARCHIVED;
+    }
+
+    public function isPublished(): bool
+    {
+        return strtolower($this->name) === self::PUBLISHED;
     }
 }

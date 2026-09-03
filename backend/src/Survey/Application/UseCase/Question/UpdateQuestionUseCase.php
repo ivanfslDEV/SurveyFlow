@@ -29,6 +29,8 @@ class UpdateQuestionUseCase
         bool $updateType,
         bool $updateRequired,
         bool $updatePosition,
+        ?array $options,
+        bool $updateOptions,
     ): Question {
         $survey = $this->surveyRepository->findActiveByQuestionId($id)
             ?? throw new QuestionNotFoundException();
@@ -50,9 +52,38 @@ class UpdateQuestionUseCase
             $updateRequired,
             $updatePosition,
             $this->clock->now(),
+            $options === null ? null : self::normalizeOptions($options),
+            $updateOptions,
         );
         $this->surveyRepository->save($survey);
 
         return $question;
+    }
+
+    /**
+     * @param array<mixed> $options
+     *
+     * @return array<int, array{label: string, position: int}>
+     */
+    private static function normalizeOptions(array $options): array
+    {
+        return array_map(
+            static function (mixed $option): array {
+                if (!is_array($option)
+                    || !isset($option['label'], $option['position'])
+                    || !is_string($option['label'])
+                    || !is_int($option['position'])) {
+                    throw new InvalidQuestionDataException(
+                        'Each option must contain a label and integer position.',
+                    );
+                }
+
+                return [
+                    'label' => $option['label'],
+                    'position' => $option['position'],
+                ];
+            },
+            $options,
+        );
     }
 }

@@ -48,11 +48,17 @@ services:
     App\Survey\Domain\Repository\SurveyStatusRepositoryInterface:
         alias: App\Survey\Infrastructure\Persistence\Doctrine\Repository\DoctrineSurveyStatusRepository
 
+    App\Survey\Domain\Repository\SubmissionRepositoryInterface:
+        alias: App\Survey\Infrastructure\Persistence\Doctrine\Repository\DoctrineSubmissionRepository
+
     App\Survey\Application\Query\SurveyQueryInterface:
         alias: App\Survey\Infrastructure\Persistence\Doctrine\Repository\DoctrineSurveyRepository
 
     App\Survey\Application\Query\QuestionQueryInterface:
         alias: App\Survey\Infrastructure\Persistence\Doctrine\Repository\DoctrineQuestionQuery
+
+    App\Survey\Application\Query\SubmissionQueryInterface:
+        alias: App\Survey\Infrastructure\Persistence\Doctrine\Repository\DoctrineSubmissionRepository
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

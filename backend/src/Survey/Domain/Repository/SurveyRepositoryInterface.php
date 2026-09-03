@@ -8,6 +8,8 @@ interface SurveyRepositoryInterface
 {
     public function findActiveById(int $id): ?Survey;
 
+    public function findPublishedById(int $id): ?Survey;
+
     public function findActiveByQuestionId(int $questionId): ?Survey;
 
     public function save(Survey $survey): void;

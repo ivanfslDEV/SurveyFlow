@@ -40,6 +40,7 @@ class CreateQuestionsUseCase
                     'type' => $type,
                     'required' => $dto->required,
                     'position' => $dto->position,
+                    'options' => self::normalizeOptions($dto->options),
                 ];
             },
             $dtos,
@@ -49,5 +50,32 @@ class CreateQuestionsUseCase
         $this->surveyRepository->save($survey);
 
         return $questions;
+    }
+
+    /**
+     * @param array<mixed> $options
+     *
+     * @return array<int, array{label: string, position: int}>
+     */
+    private static function normalizeOptions(array $options): array
+    {
+        return array_map(
+            static function (mixed $option): array {
+                if (!is_array($option)
+                    || !isset($option['label'], $option['position'])
+                    || !is_string($option['label'])
+                    || !is_int($option['position'])) {
+                    throw new InvalidQuestionDataException(
+                        'Each option must contain a label and integer position.',
+                    );
+                }
+
+                return [
+                    'label' => $option['label'],
+                    'position' => $option['position'],
+                ];
+            },
+            $options,
+        );
     }
 }

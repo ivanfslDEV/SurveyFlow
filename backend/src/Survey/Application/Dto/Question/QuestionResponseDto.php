@@ -14,6 +14,7 @@ class QuestionResponseDto
         public bool $required,
         public int $position,
         public string $createdAt,
+        public array $options,
     ) {
     }
 
@@ -27,6 +28,10 @@ class QuestionResponseDto
             required: $question->isRequired(),
             position: $question->getPosition(),
             createdAt: $question->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            options: array_map(
+                QuestionOptionResponseDto::fromEntity(...),
+                $question->getOptions(),
+            ),
         );
     }
 }
