@@ -1,47 +1,22 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import AppLogo from '@/components/AppLogo.vue'
+import { auth } from '@/auth/session'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <div v-if="!auth.state.initialized" class="app-boot" :aria-label="t('app.initializing')">
+    <AppLogo />
+    <span class="app-boot__line"></span>
+  </div>
+  <RouterView v-else />
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
+.app-boot { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 1.25rem; background: var(--canvas); }
+.app-boot__line { position: relative; overflow: hidden; width: 80px; height: 3px; border-radius: 999px; background: #dce5e1; }
+.app-boot__line::after { content: ''; position: absolute; inset: 0; width: 45%; border-radius: inherit; background: var(--teal); animation: boot 1s ease-in-out infinite alternate; }
+@keyframes boot { from { transform: translateX(-10%); } to { transform: translateX(145%); } }
 </style>
