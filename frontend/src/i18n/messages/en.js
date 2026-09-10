@@ -78,6 +78,10 @@ export default {
     types: { text: 'Free text', single_choice: 'Single choice', multiple_choice: 'Multiple choice', rating: 'Rating 1–5' },
   },
   submissions: {
+    summary: 'Summary', table: 'Table', individual: 'Individual', views: 'Response views',
+    answerCount: 'No answers | 1 answer | {count} answers', loading: 'Loading answers…', retry: 'Try again',
+    tableLabel: 'Answers by question', tableCaption: 'Answers on this page, grouped by question. Use the page controls to see more submissions.',
+    submission: 'Submission', noAnswer: 'No answer',
     back: '← Back to survey', eyebrow: 'Results', fallbackTitle: 'Answers', subtitle: 'Review each submission and the answers saved when it was submitted.',
     total: 'Total answers', online: 'The survey is online and continues to accept answers.', offline: 'The survey is not published at the moment.',
     sectionTitle: 'Submissions', sectionText: 'Ordered from newest to oldest.', responseNumber: 'Answer {id}',

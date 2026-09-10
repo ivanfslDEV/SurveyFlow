@@ -78,6 +78,10 @@ export default {
     types: { text: 'Texto livre', single_choice: 'Escolha única', multiple_choice: 'Escolha múltipla', rating: 'Avaliação 1–5' },
   },
   submissions: {
+    summary: 'Resumo', table: 'Tabela', individual: 'Individual', views: 'Vistas das respostas',
+    answerCount: 'Sem respostas | 1 resposta | {count} respostas', loading: 'A carregar respostas…', retry: 'Tentar novamente',
+    tableLabel: 'Respostas por pergunta', tableCaption: 'Respostas desta página, agrupadas por pergunta. Use a paginação para ver mais submissões.',
+    submission: 'Submissão', noAnswer: 'Sem resposta',
     back: '← Voltar à survey', eyebrow: 'Resultados', fallbackTitle: 'Respostas', subtitle: 'Consulte cada envio e as respostas guardadas no momento da submissão.',
     total: 'Total de respostas', online: 'A survey está online e continua a aceitar respostas.', offline: 'A survey não está publicada neste momento.',
     sectionTitle: 'Submissões', sectionText: 'Ordenadas da mais recente para a mais antiga.', responseNumber: 'Resposta {id}',
